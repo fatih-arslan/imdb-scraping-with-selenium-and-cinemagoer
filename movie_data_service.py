@@ -104,7 +104,7 @@ class MovieDataService:
             return None
 
 
-    def get_gross_value(self):
+    def get_total_gross(self):
         try:
             soup = self.get_soup(self.url)
             gross_data_section = soup.find('section', {'cel_widget_id': 'StaticFeature_BoxOffice'})
