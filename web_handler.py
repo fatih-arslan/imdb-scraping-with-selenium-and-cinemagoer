@@ -55,16 +55,16 @@ class WebHandler:
         return page_source
 
     def get_movie_links(self):
-        try:
-            movie_links = []
-            page_source = self.__click_show_more()
-            soup = BeautifulSoup(page_source, 'html.parser')
-            # Find the movie list section
-            movie_list_section = soup.find('div', class_='ipc-page-grid__item ipc-page-grid__item--span-2')
+        movie_links = []
+        page_source = self.__click_show_more()
+        soup = BeautifulSoup(page_source, 'html.parser')
+        # Find the movie list section
+        movie_list_div = soup.find('div', class_='ipc-page-grid__item ipc-page-grid__item--span-2')
 
-            # Find all movies
-            movies = movie_list_section.find_all('li', class_='ipc-metadata-list-summary-item')
-            for movie in movies:
+        # Find all movies
+        movies = movie_list_div.find_all('li', class_='ipc-metadata-list-summary-item')
+        for movie in movies:
+            try:
                 div = movie.find('div', {'class': 'ipc-metadata-list-summary-item__c'})
                 div_2 = div.find('div', {'class': 'ipc-metadata-list-summary-item__tc'})
                 div_3 = div_2.find('div', {'class': 'sc-53c98e73-4 gOfInm dli-parent'})
@@ -73,22 +73,8 @@ class WebHandler:
                 div_6 = div_5.find('div', {'class': 'ipc-title ipc-title--base ipc-title--title ipc-title-link-no-icon ipc-title--on-textPrimary sc-43986a27-9 gaoUku dli-title'})
                 link = div_6.find('a').get('href')
                 movie_links.append(link)
-            return movie_links
-        except:
-            return []
-
-    def get_movie_links_with_url(self, url: str):
-        r = requests.get(url)
-        soup = BeautifulSoup(r.content, 'html.parser')
-        div = soup.find('div', {'class': 'lister list detail sub-list'})
-        div_2 = div.find('div', {'class': 'lister-list'})
-        movie_divs = div_2.find_all('div', {'class': 'lister-item mode-detail'})
-        movie_links = []
-        for movie in movie_divs:
-            content = movie.find('div', {'class': 'lister-item-content'})
-            header = content.find('h3', {'class': 'lister-item-header'})
-            link = header.find('a').get('href')
-            movie_links.append(link)
+            except:
+                continue
         return movie_links
 
 

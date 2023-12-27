@@ -8,8 +8,24 @@ class MovieDataService:
     def __init__(self, url: str):
         self.url = url
         self.ia = Cinemagoer()
-        self.movie_id = self.__extract_imdb_id(url)
+        self.movie_id = self.__extract_imdb_id(self.url)
         self.movie = self.ia.get_movie(self.movie_id)
+
+    @staticmethod
+    def get_movie_links_with_url(url: str):
+        r = requests.get(url)
+        soup = BeautifulSoup(r.content, 'html.parser')
+        div = soup.find('div', {'class': 'lister list detail sub-list'})
+        div_2 = div.find('div', {'class': 'lister-list'})
+        movie_divs = div_2.find_all('div', {'class': 'lister-item mode-detail'})
+        movie_links = []
+        for movie in movie_divs:
+            content = movie.find('div', {'class': 'lister-item-content'})
+            header = content.find('h3', {'class': 'lister-item-header'})
+            link = header.find('a').get('href')
+            movie_links.append(link)
+        return movie_links
+
     @staticmethod
     def get_soup(url: str):
         headers = {'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"}
@@ -132,6 +148,20 @@ class MovieDataService:
         else:
             return None
 
+    def __extract_imdb_id(self, url: str):
+        # Define a regular expression pattern to match the IMDb numeric ID
+        pattern = r'/title/tt(\d+)/'
+
+        # Use re.search to find the pattern in the URL
+        match = re.search(pattern, url)
+
+        # If a match is found, return the numeric part of the IMDb ID
+        if match:
+            numeric_id = match.group(1)
+            return numeric_id
+        else:
+            return None
+
     def __get_minute_value(self, time_string: str):
         # gets the minute value from a string like "2h22m"
         pattern = re.compile(r'(\d+)h\s*(\d+)m')
@@ -147,16 +177,3 @@ class MovieDataService:
         else:
             return None
 
-    def __extract_imdb_id(self, url):
-        # Define a regular expression pattern to match the IMDb numeric ID
-        pattern = r'/title/tt(\d+)/'
-
-        # Use re.search to find the pattern in the URL
-        match = re.search(pattern, url)
-
-        # If a match is found, return the numeric part of the IMDb ID
-        if match:
-            numeric_id = match.group(1)
-            return numeric_id
-        else:
-            return None
